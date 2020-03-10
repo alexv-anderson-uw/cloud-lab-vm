@@ -14,12 +14,12 @@ import geni.rspec.pg as pg
 def raiseError(msg):
     portal.context.reportError(portal.ParameterError(msg))
 
-
-# Describe the parameter(s) this profile script can accept.
-portal.context.defineParameter( "cores", "Number of Cores", portal.ParameterType.INTEGER, 4 )
+portal.context.defineParameter( "cores", "Number of Cores per VM", portal.ParameterType.INTEGER, 4 )
 portal.context.defineParameter( "vms", "Number of Virtual Machines", portal.ParameterType.INTEGER, 4 )
 portal.context.defineParameter( "image", "Image", portal.ParameterType.IMAGE, "urn:publicid:IDN+emulab.net+image+emulab-ops:UBUNTU18-64-STD" )
-portal.context.defineParameter( "b", "Are you happy?", portal.ParameterType.BOOLEAN, True )
+portal.context.defineParameter( "docker", "Install Docker?", portal.ParameterType.BOOLEAN, True )
+portal.context.defineParameter( "p3_tools", "Install Python3 tools?", portal.ParameterType.BOOLEAN, False )
+portal.context.defineParameter( "pyspark", "Install PySpark?", portal.ParameterType.BOOLEAN, False )
 
 # Retrieve the values the user specifies during instantiation.
 params = portal.context.bindParameters()
@@ -29,10 +29,24 @@ request = portal.context.makeRequestRSpec()
 if params.vms < 1 or params.vms > 8:
     raiseError("You must choose at least 1 and no more than 8 VMs.")
 
+if params.vms < 1 or params.vms > 12:
+    raiseError("You must choose at least 1 and no more than 12 coress.")
+
 for i in range(0, params.vms):
     node = request.XenVM("node-" + str(i))
+    node.cores = params.cores
 
-    # Ubuntu 18.04 LTS 64-bit
-    node.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops:UBUNTU18-64-STD"
+    node.disk_image = params.image
+
+    if params.docker:
+        node.addService(pg.Execute(shell="bash", command="/local/repository/docker.bash"))
+
+    if params.p3_tools:
+        node.addService(pg.Execute(shell="bash", command="/local/repository/python.bash"))
+    
+    if params.pyspark:
+        if not params.p3_tools:
+            node.addService(pg.Execute(shell="bash", command="/local/repository/python.bash"))
+        node.addService(pg.Execute(shell="bash", command="/local/repository/pyspark.bash"))
 
 portal.context.printRequestRSpec()
