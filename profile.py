@@ -18,7 +18,7 @@ def raiseError(msg):
 # Describe the parameter(s) this profile script can accept.
 portal.context.defineParameter( "cores", "Number of Cores", portal.ParameterType.INTEGER, 4 )
 portal.context.defineParameter( "vms", "Number of Virtual Machines", portal.ParameterType.INTEGER, 4 )
-portal.context.defineParameter( "image", "Image", portal.ParameterType.IMAGE )
+portal.context.defineParameter( "image", "Image", portal.ParameterType.IMAGE, "urn:publicid:IDN+emulab.net+image+emulab-ops:UBUNTU18-64-STD" )
 portal.context.defineParameter( "b", "Are you happy?", portal.ParameterType.BOOLEAN, True )
 
 # Retrieve the values the user specifies during instantiation.
